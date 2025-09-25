@@ -44,12 +44,16 @@ model Session {
 
 model User {
     id            String    @id @default(cuid())
+    role          UserRole      @default(CLIENT)
     name          String?
     email         String?   @unique
     emailVerified DateTime?
     image         String?
     accounts      Account[]
     sessions      Session[]
+    clients       TrainerClient[] @relation("TrainerToClient")
+    trainers      TrainerClient[] @relation("ClientToTrainer")
+
 }
 
 model VerificationToken {
@@ -58,4 +62,22 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+
+// Relation trainer <-> client (many-to-many)
+model TrainerClient {
+    id          String
+    trainerId String
+    clientId String
+    trainer User @relation("TrainerToClient", fields: [trainerId], references: [id])
+    client User @relation("ClientToTrainer", fields: [clientId], references: [id])
+
+    @@unique([trainerId, clientId])
+}
+
+enum UserRole {
+    ADMIN
+    TRAINER
+    CLIENT
 }
